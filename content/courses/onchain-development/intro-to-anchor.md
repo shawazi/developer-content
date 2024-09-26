@@ -487,13 +487,27 @@ rustup install 1.79.0
 rustup default 1.79.0
 ```
 
+Verify you've installed avm and the latest anchor versions:
+
+```shell
+avm --version
+anchor --version
+```
+
+The outputs should be similar to:
+
+````shell
+avm 0.30.1
+anchor-cli 0.30.1
+```
+
 </Callout>
 
 #### Creating a new Anchor project with the multiple files template
 
 ```shell
 anchor init anchor-counter --template multiple
-```
+````
 
 This will create the anchor-counter directory with the necessary files, which
 we'll adjust to work as a counter program.
