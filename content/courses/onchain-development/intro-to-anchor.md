@@ -26,7 +26,7 @@ collection of programs grows daily as developers and creators dream up and
 deploy new programs.
 
 This lesson will give you a basic introduction to writing and deploying a Solana
-program using the Rust programming language and the Anchor framework. 
+program using the Rust programming language and the Anchor framework.
 
 ### What is Anchor?
 
@@ -414,12 +414,14 @@ You are now ready to build your own Solana program using the Anchor framework!
 
 ### Making an Anchor v0.30.1 counter program for Solana
 
-We'll put the information from this course into practice by creating a basic counter program for Solana.
+We'll put the information from this course into practice by creating a basic
+counter program for Solana.
 
 #### Setting up the development environment
 
-`solana-cli` can be installed by following this guide: https://solana.com/docs/intro/installation.
-This will use the agave fork of Solana, found at https://github.com/anza-xyz/agave.
+`solana-cli` can be installed by following this guide:
+https://solana.com/docs/intro/installation. This will use the agave fork of
+Solana, found at https://github.com/anza-xyz/agave.
 
 ```shell
 curl -O https://raw.githubusercontent.com/anza-xyz/agave/v1.18.23/scripts/agave-install-init-x86_64-unknown-linux-gnu
@@ -431,7 +433,10 @@ echo 'export PATH="$HOME/.agave/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Go to your terminal and ensure that the following commands output usable versions. Anchor will fail to create the tests directory if you don't have npm installed on your OS, so ensure npm is installed alongside the other dependencies:
+Go to your terminal and ensure that the following commands output usable
+versions. Anchor will fail to create the tests directory if you don't have npm
+installed on your OS, so ensure npm is installed alongside the other
+dependencies:
 
 ```shell
 node --version
@@ -448,16 +453,22 @@ v22.9.0
 10.8.3
 1.22.22
 solana-cli 1.18.18 (src:83047136; feat:4215500110, client:SolanaLabs)
-# if you're using agave, the latest version of solana-cli should show as of 09/25/24: 
+# if you're using agave, the latest version of solana-cli should show as of 09/25/24:
 solana-cli 1.18.23 (src:e5d267d9; feat:4215500110, client:Agave)
 rustc 1.81.0 (eeb90cda1 2024-09-04)
 ```
 
-To install anchor, follow the instructions here: https://www.anchor-lang.com/docs/installation
+To install anchor, follow the instructions here:
+https://www.anchor-lang.com/docs/installation
 
-The most recent version of anchor (v0.30.1) has a minor conflict with rust versions ^1.79.0, so it might be necessary to follow this solution during installation: https://github.com/coral-xyz/anchor/issues/3131#issuecomment-2264178262. Don't worry, it's an extremely fast and easy fix.
+The most recent version of anchor (v0.30.1) has a minor conflict with rust
+versions ^1.79.0, so it might be necessary to follow this solution during
+installation:
+https://github.com/coral-xyz/anchor/issues/3131#issuecomment-2264178262. Don't
+worry, it's an extremely fast and easy fix.
 
-If you'd rather just downgrade rust, you can set the development environment's rust version to 1.79.0 using rustup:
+If you'd rather just downgrade rust, you can set the development environment's
+rust version to 1.79.0 using rustup:
 
 ```shell
 rustup install 1.79.0
@@ -470,11 +481,13 @@ rustup default 1.79.0
 anchor init anchor-counter --template multiple
 ```
 
-This will create the anchor-counter directory with the necessary files, which we'll adjust to work as a counter program.
+This will create the anchor-counter directory with the necessary files, which
+we'll adjust to work as a counter program.
 
 #### Setting up the counter program
 
-The resulting `tree` (excluding the `node_modules` directory) from the above command will be:
+The resulting `tree` (excluding the `node_modules` directory) from the above
+command will be:
 
 ```shell
 tree -I 'node_modules'
@@ -509,15 +522,29 @@ tree -I 'node_modules'
 11 directories, 16 files
 ```
 
-The `app` directory is where you can add frontend code for your program, if you'd like. The `migrations` directory is where you can add scripts to deploy your program. The `tests` directory is where you can add tests for your program. The `programs` directory is where the bulk of the anchor code will go.
+The `app` directory is where you can add frontend code for your program, if
+you'd like. The `migrations` directory is where you can add scripts to deploy
+your program. The `tests` directory is where you can add tests for your program.
+The `programs` directory is where the bulk of the anchor code will go.
 
 #### Writing the program code
 
-Let's navigate to the `programs/anchor-counter` directory and open the `src/lib.rs` file. 
+Let's navigate to the `programs/anchor-counter` directory and open the
+`src/lib.rs` file.
 
-Keep your declare_id! line as is, because that is specific to your instance of the program.
+Keep your declare_id! line as is, because that is specific to your instance of
+the program.
 
-Update the file with the following:
+To ensure that your program ID is correctly set, you can run the following
+command:
+
+```shell
+anchor keys sync
+```
+
+This will update your Anchor.toml and lib.rs files with the correct program ID.
+
+Update the src/lib.rs file with the following:
 
 ```rust
 use anchor_lang::prelude::*;
@@ -548,7 +575,8 @@ pub mod anchor_counter {
 }
 ```
 
-Now, let's update the `state/mod.rs` file. Note the use of the InitSpace attribute, which automatically calculates the lamports needed for the account:
+Now, let's update the `state/mod.rs` file. Note the use of the InitSpace
+attribute, which automatically calculates the lamports needed for the account:
 
 ```rust
 use anchor_lang::prelude::*;
@@ -560,9 +588,11 @@ pub struct Counter {
 }
 ```
 
-This Counter struct will be used to define the counter account's data structure - a simple u64 count.
+This Counter struct will be used to define the counter account's data
+structure - a simple u64 count.
 
-Next, let's update the `instructions/mod.rs` file, which defines the modules for each instruction and allows them to be imported into the lib.rs file:
+Next, let's update the `instructions/mod.rs` file, which defines the modules for
+each instruction and allows them to be imported into the lib.rs file:
 
 ```rust
 pub mod initialize;
@@ -574,7 +604,8 @@ pub use increment::*;
 pub use decrement::*;
 ```
 
-Now, let's update the `instructions/initialize.rs` file, which handles initializing the counter:
+Now, let's update the `instructions/initialize.rs` file, which handles
+initializing the counter:
 
 ```rust
 use anchor_lang::prelude::*;
@@ -597,7 +628,8 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
 }
 ```
 
-Next, let's create the `instructions/increment.rs` file, to handle incrementing the counter:
+Next, let's create the `instructions/increment.rs` file, to handle incrementing
+the counter:
 
 ```rust
 use anchor_lang::prelude::*;
@@ -619,7 +651,8 @@ pub fn handler(ctx: Context<Update>) -> Result<()> {
 }
 ```
 
-Finally, let's create the `instructions/decrement.rs` file to handle decrementing the counter:
+Finally, let's create the `instructions/decrement.rs` file to handle
+decrementing the counter:
 
 ```rust
 use anchor_lang::prelude::*;
@@ -641,7 +674,8 @@ pub fn handler(ctx: Context<Update>) -> Result<()> {
 }
 ```
 
-Now, we can navigate back to the `anchor-counter` directory and build the program:
+Now, we can navigate back to the `anchor-counter` directory and build the
+program:
 
 ```shell
 anchor build
@@ -655,7 +689,8 @@ You can validate the program ID is cohesive by running the following command:
 anchor keys list
 ```
 
-Then go to the root Anchor.toml and src/lib.rs to ensure that the program ID is correctly set.
+Then go to the root Anchor.toml and src/lib.rs to ensure that the program ID is
+correctly set.
 
 #### Setting up the test environment
 
@@ -665,33 +700,34 @@ Navigate to the root `anchor-counter` directory and run the following commands:
 yarn install
 ```
 
-This will install the dependencies for testing with typescript. 
+This will install the dependencies for testing with typescript.
 
-Let's also update the tsconfig.json to use commonjs and node's module resolution, as well as ES2022.
+Let's also update the tsconfig.json to use commonjs and node's module
+resolution, as well as ES2022.
 
 ```json
 {
-    "compilerOptions": {
-      "types": ["mocha", "chai"],
-      "typeRoots": ["./node_modules/@types"],
-      "lib": ["ES2022", "DOM"],
-      "module": "commonjs",
-      "target": "ES2022",
-      "esModuleInterop": true,
-      "strict": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-      "outDir": "dist",
-      "baseUrl": ".",
-      "paths": {
-        "@coral-xyz/anchor": ["node_modules/@coral-xyz/anchor"]
-      }
-    },
-    "include": ["tests/**/*"],
-    "exclude": ["node_modules"]
-  }
+  "compilerOptions": {
+    "types": ["mocha", "chai"],
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["ES2022", "DOM"],
+    "module": "commonjs",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@coral-xyz/anchor": ["node_modules/@coral-xyz/anchor"]
+    }
+  },
+  "include": ["tests/**/*"],
+  "exclude": ["node_modules"]
+}
 ```
 
 Then, go to anchor-counter/tests/anchor-counter.ts and update the code:
@@ -719,7 +755,9 @@ describe("anchor-counter", () => {
       .signers([counterKeypair])
       .rpc();
 
-    const account = await program.account.counter.fetch(counterKeypair.publicKey);
+    const account = await program.account.counter.fetch(
+      counterKeypair.publicKey,
+    );
     expect(account.count.toNumber()).to.equal(0);
   });
 
@@ -732,11 +770,13 @@ describe("anchor-counter", () => {
       })
       .rpc();
 
-    const account = await program.account.counter.fetch(counterKeypair.publicKey);
+    const account = await program.account.counter.fetch(
+      counterKeypair.publicKey,
+    );
     expect(account.count.toNumber()).to.equal(1);
   });
 
-    it("Decrements the counter", async () => {
+  it("Decrements the counter", async () => {
     await program.methods
       .decrement()
       .accounts({
@@ -745,16 +785,21 @@ describe("anchor-counter", () => {
       })
       .rpc();
 
-    const account = await program.account.counter.fetch(counterKeypair.publicKey);
+    const account = await program.account.counter.fetch(
+      counterKeypair.publicKey,
+    );
     expect(account.count.toNumber()).to.equal(0);
   });
-
 });
 ```
 
-This creates a provider using the environment's wallet, sets the localnet (localhost) provider for anchor, and creates a program instance using the workspace. It also generates a keypair for the counter. This will allow `anchor test` to run the tests.
+This creates a provider using the environment's wallet, sets the localnet
+(localhost) provider for anchor, and creates a program instance using the
+workspace. It also generates a keypair for the counter. This will allow
+`anchor test` to run the tests.
 
-Let's try running them now! Get back to your root `anchor-counter` directory and run the following command:
+Let's try running them now! Get back to your root `anchor-counter` directory and
+run the following command:
 
 ```shell
 anchor test
@@ -779,7 +824,11 @@ When you're ready to deploy a Solana program, run the following command:
 anchor deploy
 ```
 
-Keep in mind, this will require SOL to pay for rent and transaction fees associated with the deployment. You can check which cluster you're connected to by running `solana config get`. If you're not connected to the devnet, you can connect to it by running `solana config set --url https://api.devnet.solana.com`.
+Keep in mind, this will require SOL to pay for rent and transaction fees
+associated with the deployment. You can check which cluster you're connected to
+by running `solana config get`. If you're not connected to the devnet, you can
+connect to it by running
+`solana config set --url https://api.devnet.solana.com`.
 
 ## Challenge
 
@@ -789,7 +838,8 @@ useful to try and get to the point where you can write it from scratch without
 referencing prior code, so try not to copy and paste here.
 
 1. Write a new program that initializes a `counter` account
-2. Implement both an `increment` and `decrement` instruction for intervals of both 1 and 5
+2. Implement both an `increment` and `decrement` instruction for intervals of
+   both 1 and 5
 3. Build and deploy your program like we did in the lab
 4. Test your newly deployed program and use Solana Explorer to check the program
    logs
@@ -798,8 +848,7 @@ As always, get creative with these challenges and take them beyond the basic
 instructions if you want - and have fun!
 
 Try to do this independently if you can! But if you get stuck, feel free to
-reference
-the [solution code](https://github.com/shawazi/anchor-counter).
+reference the [solution code](https://github.com/shawazi/anchor-counter).
 
 <Callout type="success" title="Completed the lab?">
 Push your code to GitHub and
