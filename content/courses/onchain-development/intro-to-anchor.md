@@ -423,6 +423,8 @@ counter program for Solana.
 https://solana.com/docs/intro/installation. This will use the agave fork of
 Solana, found at https://github.com/anza-xyz/agave.
 
+To install it on any Linux distribution, you can follow these commands below:
+
 ```shell
 curl -O https://raw.githubusercontent.com/anza-xyz/agave/v1.18.23/scripts/agave-install-init-x86_64-unknown-linux-gnu
 chmod +x agave-install-init-x86_64-unknown-linux-gnu
@@ -458,13 +460,13 @@ solana-cli 1.18.23 (src:e5d267d9; feat:4215500110, client:Agave)
 rustc 1.81.0 (eeb90cda1 2024-09-04)
 ```
 
-To install anchor, follow the instructions here:
-https://www.anchor-lang.com/docs/installation
+To install anchor, follow the
+[instructions](https://www.anchor-lang.com/docs/installation).
 
+<Callout type="warning" title="Don't forget!">
 The most recent version of anchor (v0.30.1) has a minor conflict with rust
-versions ^1.79.0, so it might be necessary to follow this solution during
-installation:
-https://github.com/coral-xyz/anchor/issues/3131#issuecomment-2264178262. Don't
+versions ^1.79.0, so it might be necessary to follow this [solution](https://github.com/coral-xyz/anchor/issues/3131#issuecomment-2264178262) during
+installation. Don't
 worry, it's an extremely fast and easy fix.
 
 If you'd rather just downgrade rust, you can set the development environment's
@@ -475,6 +477,8 @@ rustup install 1.79.0
 rustup default 1.79.0
 ```
 
+</Callout>
+
 #### Creating a new Anchor project with the multiple files template
 
 ```shell
@@ -484,7 +488,7 @@ anchor init anchor-counter --template multiple
 This will create the anchor-counter directory with the necessary files, which
 we'll adjust to work as a counter program.
 
-#### Setting up the counter program
+#### Writing the code for the counter program
 
 The resulting `tree` (excluding the `node_modules` directory) from the above
 command will be:
