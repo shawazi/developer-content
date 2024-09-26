@@ -657,7 +657,7 @@ pub struct Initialize<'info> {
 
 pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     let counter = &mut ctx.accounts.counter;
-    counter.count = 0; // Initialize the counter to 0
+    counter.count = 0;
     msg!("Counter initialized. Initial count: {}.", counter.count);
     Ok(())
 }
