@@ -496,7 +496,7 @@ anchor --version
 
 The outputs should be similar to:
 
-````shell
+```shell
 avm 0.30.1
 anchor-cli 0.30.1
 ```
@@ -507,7 +507,7 @@ anchor-cli 0.30.1
 
 ```shell
 anchor init anchor-counter --template multiple
-````
+```
 
 This will create the anchor-counter directory with the necessary files, which
 we'll adjust to work as a counter program.
@@ -561,7 +561,8 @@ Let's navigate to the `programs/anchor-counter` directory, and open the
 src/lib.rs file.
 
 Anchor build will generate a keypair for your new program - the keys are saved
-in the `target/deploy` directory.
+in the `target/deploy` directory. The program won't build successfully from this
+barebones template, but we'll fix that.
 
 ```shell
 cd anchor-counter
@@ -592,7 +593,7 @@ pub mod constants;
 
 use instructions::*;
 
-declare_id!(<default ID from your anchor init should be here>);
+declare_id!("GHmQT2iEwiw3hZvWsYt94mWtEDhK5kBktYhhddLH1e4c");
 
 #[program]
 pub mod anchor_counter {
@@ -602,12 +603,12 @@ pub mod anchor_counter {
         instructions::initialize::handler(ctx)
     }
 
-    pub fn increment(ctx: Context<Update>) -> Result<()> {
-        instructions::increment::handler(ctx)
+    pub fn increment(ctx: Context<IncrementUpdate>) -> Result<()> {
+        instructions::increment::increment_handler(ctx)
     }
 
-    pub fn decrement(ctx: Context<Update>) -> Result<()> {
-        instructions::decrement::handler(ctx)
+    pub fn decrement(ctx: Context<DecrementUpdate>) -> Result<()> {
+        instructions::decrement::decrement_handler(ctx)
     }
 }
 ```
@@ -667,6 +668,8 @@ space allocation from the official
 [anchor documentation](https://www.anchor-lang.com/docs/space).
 </Callout>
 
+Inside of `instructions/initialize.rs`, adjust the code to match the following:
+
 ```rust
 use crate::state::Counter;
 use anchor_lang::prelude::*;
@@ -686,7 +689,6 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     msg!("Counter initialized. Initial count: {}.", counter.count);
     Ok(())
 }
-
 ```
 
 Within instructions/increment.rs, let’s implement an `increment` instruction
@@ -759,8 +761,8 @@ pub fn decrement_handler(ctx: Context<DecrementUpdate>) -> Result<()> {
 }
 ```
 
-Now, we can navigate back to the `anchor-counter` directory and build the
-completed program:
+Now, we can navigate back to the `anchor-counter` directory and successfully
+build the completed program!
 
 ```shell
 anchor build
@@ -768,14 +770,15 @@ anchor build
 
 This will create a `target` directory with the build artifacts.
 
-You can validate the program ID is cohesive by running the following command:
+You can validate the program ID matches your keypair by running the following
+command:
 
 ```shell
 anchor keys list
 ```
 
-Then go to the root Anchor.toml and src/lib.rs to ensure that the program ID is
-correctly set.
+Then go to the root Anchor.toml and src/lib.rs to ensure that the program ID
+matches the output of `anchor keys list`.
 
 #### Setting up the test environment
 
@@ -881,7 +884,8 @@ describe("anchor-counter", () => {
 This creates a provider using the environment's wallet, sets the localnet
 (localhost) provider for anchor, and creates a program instance using the
 workspace. It also generates a keypair for the counter. This will allow
-`anchor test` to run the tests.
+`anchor test` to run the tests where we check that the counter is initializing,
+incrementing, and decrementing as expected.
 
 Let's try running them now! Get back to your root `anchor-counter` directory and
 run the following command:
