@@ -454,6 +454,10 @@ solana --version
 rustc --version
 ```
 
+<Callout type="warning" title="Don't forget about npm">
+The Anchor documentation doesn't mention [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), but it is critical for `anchor init` to generate tests and the package.json.
+</Callout>
+
 The output for the latest versions as of 09/25/24 is:
 
 ```shell
