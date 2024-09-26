@@ -455,7 +455,7 @@ rustc --version
 ```
 
 <Callout type="warning" title="Don't forget about npm">
-The Anchor documentation doesn't mention [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), but it is critical for `anchor init` to generate tests and the package.json.
+The Anchor documentation doesn't mention [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), but it is critical for `anchor init` to generate the tests directory and the package.json.
 </Callout>
 
 The output for the latest versions as of 09/25/24 is:
@@ -645,6 +645,13 @@ It'll need the following accounts:
 - `user` - payer for the initialization
 - `system_program` - the system program is required for the initialization of
   any new accounts
+
+<Callout type="info" title="Calculating space allocation">
+You'll see `INIT_SPACE` accessed here, thanks to the `derive(InitSpace)` macro
+from earlier. You can read more about the mechanics of
+space allocation from the official
+[anchor documentation](https://www.anchor-lang.com/docs/space).
+</Callout>
 
 ```rust
 use crate::state::Counter;
