@@ -799,7 +799,7 @@ instructions if you want - and have fun!
 
 Try to do this independently if you can! But if you get stuck, feel free to
 reference
-the [solution code](https://github.com/Unboxed-Software/anchor-counter-program/tree/solution-decrement).
+the [solution code](https://github.com/shawazi/anchor-counter).
 
 <Callout type="success" title="Completed the lab?">
 Push your code to GitHub and
