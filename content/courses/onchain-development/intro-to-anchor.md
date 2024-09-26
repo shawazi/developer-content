@@ -419,9 +419,13 @@ counter program for Solana.
 
 #### Setting up the development environment
 
-`solana-cli` can be installed by following this guide:
-https://solana.com/docs/intro/installation. This will use the agave fork of
-Solana, found at https://github.com/anza-xyz/agave.
+`solana-cli` can be installed by following this
+[installation guide](https://solana.com/docs/intro/installation).
+
+<Callout type="info" title="Notes for installing solana-cli">
+Our counter program will use the `agave` fork of `solana`, found at
+https://github.com/anza-xyz/agave. The latest mainnet-beta release as of
+9/25/2024 is v1.18.23.
 
 To install it on any Linux distribution, you can follow these commands below:
 
@@ -434,6 +438,8 @@ solana --version
 echo 'export PATH="$HOME/.agave/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
+
+</Callout>
 
 Go to your terminal and ensure that the following commands output usable
 versions. Anchor will fail to create the tests directory if you don't have npm
@@ -463,7 +469,7 @@ rustc 1.81.0 (eeb90cda1 2024-09-04)
 To install anchor, follow the
 [instructions](https://www.anchor-lang.com/docs/installation).
 
-<Callout type="warning" title="Don't forget!">
+<Callout type="warning" title="Don't fear!">
 The most recent version of anchor (v0.30.1) has a minor conflict with rust
 versions ^1.79.0, so it might be necessary to follow this [solution](https://github.com/coral-xyz/anchor/issues/3131#issuecomment-2264178262) during
 installation. Don't
@@ -533,8 +539,16 @@ The `programs` directory is where the bulk of the anchor code will go.
 
 #### Writing the program code
 
-Let's navigate to the `programs/anchor-counter` directory and open the
-`src/lib.rs` file.
+Let's navigate to the `programs/anchor-counter` directory, and open the
+src/lib.rs file.
+
+Anchor build will generate a keypair for your new program - the keys are saved
+in the `target/deploy` directory.
+
+```shell
+cd anchor-counter
+anchor build
+```
 
 Keep your declare_id! line as is, because that is specific to your instance of
 the program.
@@ -546,7 +560,8 @@ command:
 anchor keys sync
 ```
 
-This will update your Anchor.toml and lib.rs files with the correct program ID.
+This will update your Anchor.toml and src/lib.rs files with the correct program
+ID.
 
 Update the src/lib.rs file with the following:
 
@@ -579,6 +594,13 @@ pub mod anchor_counter {
 }
 ```
 
+Let's use the `#[account]` attribute to define a new `Counter` account type. The
+`Counter` struct defines one `count` field of type `u64`. This means that we can
+expect any new accounts initialized as a `Counter` type to have a matching data
+structure. The `#[account]` attribute also automatically sets the discriminator
+for a new account and sets the owner of the account as the `programId` from the
+`declare_id!` macro.
+
 Now, let's update the `state/mod.rs` file. Note the use of the InitSpace
 attribute, which automatically calculates the lamports needed for the account:
 
@@ -608,12 +630,21 @@ pub use increment::*;
 pub use decrement::*;
 ```
 
-Now, let's update the `instructions/initialize.rs` file, which handles
-initializing the counter:
+Now we'll implement `Context` type `Initialize` to handle the initialization of
+our counter.
+
+Using the `#[derive(Accounts)]` macro, let’s implement the `Initialize` type
+that lists and validates the accounts used by the `initialize` instruction.
+It'll need the following accounts:
+
+- `counter` - the counter account initialized in the instruction
+- `user` - payer for the initialization
+- `system_program` - the system program is required for the initialization of
+  any new accounts
 
 ```rust
-use anchor_lang::prelude::*;
 use crate::state::Counter;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -626,60 +657,85 @@ pub struct Initialize<'info> {
 
 pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     let counter = &mut ctx.accounts.counter;
-    let previous_count = counter.count - 1;
-    msg!("Counter incremented. Previous count: {}; New count: {}.", previous_count, counter.count);
+    counter.count = 0; // Initialize the counter to 0
+    msg!("Counter initialized. Initial count: {}.", counter.count);
     Ok(())
 }
+
 ```
 
-Next, let's create the `instructions/increment.rs` file, to handle incrementing
-the counter:
+Within instructions/increment.rs, let’s implement an `increment` instruction
+handler to increment the `count` once a `counter` account is initialized by the
+first instruction handler. This instruction handler requires a `Context` of type
+`Update` (implemented in the next step) and takes no additional instruction
+data. In the instruction handler's logic, we are simply tracking the current
+state, and then incrementing the existing `counter` account’s `count` field by
+`1`.
 
 ```rust
-use anchor_lang::prelude::*;
 use crate::state::Counter;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-pub struct Update<'info> {
+pub struct IncrementUpdate<'info> {
     #[account(mut)]
     pub counter: Account<'info, Counter>,
     pub user: Signer<'info>,
 }
 
-pub fn handler(ctx: Context<Update>) -> Result<()> {
+pub fn increment_handler(ctx: Context<IncrementUpdate>) -> Result<()> {
     let counter = &mut ctx.accounts.counter;
+    let previous_count = counter.count;
     counter.count += 1;
-    let previous_count = counter.count - 1;
-    msg!("Counter incremented. Previous count: {}; New count: {}.", previous_count, counter.count);
+    msg!(
+        "Counter incremented. Previous count: {}; New count: {}.",
+        previous_count,
+        counter.count
+    );
     Ok(())
 }
 ```
 
 Finally, let's create the `instructions/decrement.rs` file to handle
-decrementing the counter:
+decrementing the counter, which functions in the same way as the incrementation
+instruction handler, but to subtract 1 instead.
+
+We'll be using the `#[derive(Accounts)]` macro again to create the
+`DecrementUpdate` type that lists the accounts that the `decrement` instruction
+handler requires. It'll need the following accounts:
+
+- `counter` - an existing counter account to increment
+- `user` - payer for the transaction fee
+
+Just like in the previous step with the increment instruction handler, we’ll
+need to specify any constraints using the `#[account(..)]` attribute:
 
 ```rust
-use anchor_lang::prelude::*;
 use crate::state::Counter;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-pub struct Update<'info> {
+pub struct DecrementUpdate<'info> {
     #[account(mut)]
     pub counter: Account<'info, Counter>,
     pub user: Signer<'info>,
 }
 
-pub fn handler(ctx: Context<Update>) -> Result<()> {
+pub fn decrement_handler(ctx: Context<DecrementUpdate>) -> Result<()> {
     let counter = &mut ctx.accounts.counter;
+    let previous_count = counter.count;
     counter.count -= 1;
-    let previous_count = counter.count + 1;
-    msg!("Counter decremented. Previous count: {}; New count: {}.", previous_count, counter.count);
+    msg!(
+        "Counter decremented. Previous count: {}; New count: {}.",
+        previous_count,
+        counter.count
+    );
     Ok(())
 }
 ```
 
 Now, we can navigate back to the `anchor-counter` directory and build the
-program:
+completed program:
 
 ```shell
 anchor build
